@@ -73,12 +73,15 @@ public class JogoServiceTest {
 
 	@Test
 	public void deveExcluirUmJogo() throws NegocioException {
-		UsuarioDto usuarioDto = new UsuarioDto(1, "Felipe");
+		UsuarioDto usuarioDtoFelipe = new UsuarioDto(1, "Felipe");
+		UsuarioDto usuarioDtoCarlos = new UsuarioDto(2, "Carlos");
 		
-		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
+		when(usuarioService.listar(eq(usuarioDtoFelipe))).thenReturn(Arrays.asList(usuarioDtoFelipe));
+		when(usuarioService.listar(eq(usuarioDtoCarlos))).thenReturn(Arrays.asList(usuarioDtoCarlos));
 		
 		List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
-		listaJogadasDto.add(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
+		listaJogadasDto.add(new JogadaDto(usuarioDtoFelipe, TipoJogadaEnum.PAPEL));
+		listaJogadasDto.add(new JogadaDto(usuarioDtoCarlos, TipoJogadaEnum.SPOOK));
 		
 		jogoService.jogar(listaJogadasDto);
 		
@@ -100,12 +103,15 @@ public class JogoServiceTest {
 	
 	@Test
 	public void deveListarUmRegistro() throws NegocioException {
-		UsuarioDto usuarioDto = new UsuarioDto(1, "Felipe");
+		UsuarioDto usuarioDtoFelipe = new UsuarioDto(1, "Felipe");
+		UsuarioDto usuarioDtoCarlos = new UsuarioDto(2, "Carlos");
 		
-		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
+		when(usuarioService.listar(eq(usuarioDtoFelipe))).thenReturn(Arrays.asList(usuarioDtoFelipe));
+		when(usuarioService.listar(eq(usuarioDtoCarlos))).thenReturn(Arrays.asList(usuarioDtoCarlos));
 		
 		List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
-		listaJogadasDto.add(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
+		listaJogadasDto.add(new JogadaDto(usuarioDtoFelipe, TipoJogadaEnum.PAPEL));
+		listaJogadasDto.add(new JogadaDto(usuarioDtoCarlos, TipoJogadaEnum.SPOOK));
 		
 		jogoService.jogar(listaJogadasDto);
 		

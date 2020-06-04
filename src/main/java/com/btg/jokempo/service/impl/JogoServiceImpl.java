@@ -38,7 +38,9 @@ public class JogoServiceImpl implements IJogoService {
 				  .collect(Collectors.groupingBy(JogadaDto::getTipojogada));
 		
 		if (listaJogadasAgrupada.keySet().size() == 5) {
-			return gravarRodada(null);
+			throw new NegocioException("Não é possível calcular vencedor");
+		} else if (listaJogadasAgrupada.keySet().size() == 1) {
+			throw new NegocioException("Não há vencedor");
 		} else {
 			TipoJogadaEnum tipoJogadaVencedora = null;
 			
