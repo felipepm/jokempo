@@ -37,7 +37,6 @@ public class UsuarioController {
 		} else {
 			return usuarioService.listar(new UsuarioDto(id, nome));
 		}
-		
 	}
 	
 	@PostMapping(name="/", consumes="application/json", produces="application/json")
@@ -54,6 +53,8 @@ public class UsuarioController {
 	        return ResponseEntity.created(location).build();
 		} catch (NegocioException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
 	}
 	
@@ -67,6 +68,8 @@ public class UsuarioController {
 			return ResponseEntity.ok().build();
 		} catch (NegocioException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
 	}
 	

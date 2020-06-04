@@ -1,23 +1,28 @@
 package com.btg.jokempo.controller;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.btg.jokempo.dto.UsuarioDto;
+import com.btg.jokempo.exception.NegocioException;
 import com.btg.jokempo.service.IUsuarioService;
 import com.btg.jokempo.service.impl.UsuarioServiceImpl;
 
-//@ExtendWith(MockitoExtension.class)
-//@RunWith(JUnitPlatform.class)
 public class UsuarioControllerTest {
-//
-//	@InjectMocks
-//	UsuarioController usuarioController;
-//
-//	@Mock
-//	IUsuarioService usuarioService;
-//	
+
 	private UsuarioController usuarioController;
 	private IUsuarioService usuarioService;
 	
@@ -27,41 +32,45 @@ public class UsuarioControllerTest {
 		usuarioController = new UsuarioController(usuarioService);
 	}
 
-
 	@Test
-	public void testAddEmployee() {
-//		MockHttpServletRequest request = new MockHttpServletRequest();
-//		RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-//
-//		when(usuarioService.cadastrar(any(UsuarioDto.class))).thenReturn(true);
-//
-//		UsuarioDto usuarioDto = new UsuarioDto("Felipe");
-//		ResponseEntity<Object> responseEntity = usuarioController.cadastrar(usuarioDto);
-//		
-//		Assertions.assertEquals(201, responseEntity.getStatusCodeValue());
+	public void deveListarUmRegistro() {
+		UsuarioDto usuarioDtoConsulta = new UsuarioDto(1, null);
+		UsuarioDto usuarioDtoRetorno = new UsuarioDto(1, "Felipe");
 
-//		assertThat(responseEntity.getStatusCodeValue()).isEqualTo(201);
-//		assertThat(responseEntity.getHeaders().getLocation().getPath()).isEqualTo("/1");
+		when(usuarioService.listar(eq(usuarioDtoConsulta))).thenReturn(Arrays.asList(usuarioDtoRetorno));
+		
+		List<UsuarioDto> listaUsuarios = usuarioController.listar(1, null);
+		
+		Assertions.assertEquals(1, listaUsuarios.size());
+		Assertions.assertEquals(1, listaUsuarios.get(0).getId());
+		Assertions.assertEquals("Felipe", listaUsuarios.get(0).getNome());
+	}
+	
+	@Test
+	public void deveCadastrarUsuario() throws NegocioException {
+		UsuarioDto usuarioDtoInclusao = new UsuarioDto(0, "Felipe");
+		UsuarioDto usuarioDtoRetorno = new UsuarioDto(1, "Felipe");
+		
+		MockHttpServletRequest request = new MockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+		
+		when(usuarioService.cadastrar(eq(usuarioDtoInclusao))).thenReturn(usuarioDtoRetorno);
+		
+		ResponseEntity<Object> cadastroResponseEntity = usuarioController.cadastrar(usuarioDtoInclusao);
+		
+		Assertions.assertEquals(201, cadastroResponseEntity.getStatusCodeValue());
+		Assertions.assertEquals("/1", cadastroResponseEntity.getHeaders().getLocation().getPath());
+	}
+	
+	@Test
+	public void deveExcluirUsuario() throws NegocioException {
+		UsuarioDto usuarioDto = new UsuarioDto(0, "Felipe");
+		
+		doNothing().when(usuarioService).excluir(eq(usuarioDto));
+		
+		ResponseEntity<Object> exclusaoResponseEntity = usuarioController.excluir(1);
+		
+		Assertions.assertEquals(200, exclusaoResponseEntity.getStatusCodeValue());
 	}
 
-//	@Test
-//	public void testFindAll() {
-//		// given
-//		Employee employee1 = new Employee(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
-//		Employee employee2 = new Employee(2, "Alex", "Gussin", "example@gmail.com");
-//		Employees employees = new Employees();
-//		employees.setEmployeeList(Arrays.asList(employee1, employee2));
-//
-//		when(employeeDAO.getAllEmployees()).thenReturn(employees);
-//
-//		// when
-//		Employees result = employeeController.getEmployees();
-//
-//		// then
-//		assertThat(result.getEmployeeList().size()).isEqualTo(2);
-//
-//		assertThat(result.getEmployeeList().get(0).getFirstName()).isEqualTo(employee1.getFirstName());
-//
-//		assertThat(result.getEmployeeList().get(1).getFirstName()).isEqualTo(employee2.getFirstName());
-//	}
 }
