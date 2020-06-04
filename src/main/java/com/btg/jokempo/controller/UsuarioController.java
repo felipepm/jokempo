@@ -43,8 +43,7 @@ public class UsuarioController {
 	public ResponseEntity<Object> cadastrar(@RequestBody UsuarioDto usuarioDto) {
 		try {
 			UsuarioDto novoUsuarioDto = usuarioService.cadastrar(usuarioDto);
-			
-			//Create resource location
+
 	        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
 	                                    .path("/{id}")
 	                                    .buildAndExpand(novoUsuarioDto.getId())

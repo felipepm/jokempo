@@ -3,6 +3,7 @@ package com.btg.jokempo.service.impl;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,85 +30,70 @@ public class JogoServiceImpl implements IJogoService {
 	}
 
 	@Override
-	public RodadaDto jogar(JogadaDto jogadaDto) throws NegocioException {
-		UsuarioDto usuarioValidado = obterUsuario(jogadaDto.getUsuario());
+	public RodadaDto jogar(List<JogadaDto> listaJogadasDto) throws NegocioException {
 		
-		if (getRodadas().isEmpty()) {
-			RodadaDto rodadaDto = new RodadaDto(1, "Rodada 1");
-			rodadaDto.adicionarJogadas(new JogadaDto(usuarioValidado, jogadaDto.getTipojogada()));
-			getRodadas().add(rodadaDto);
-		} else if (!getRodadas().getLast().getAtiva()) {
-			Optional<RodadaDto> maiorRodadaDto = getRodadas().stream()
-					.max(Comparator.comparing(RodadaDto::getId));
+		validarJogadas(listaJogadasDto);
+		
+		Map<TipoJogadaEnum, List<JogadaDto>> listaJogadasAgrupada = listaJogadasDto.stream()
+				  .collect(Collectors.groupingBy(JogadaDto::getTipojogada));
+		
+		if (listaJogadasAgrupada.keySet().size() == 5) {
+			return gravarRodada(null);
+		} else {
+			TipoJogadaEnum tipoJogadaVencedora = null;
 			
-			RodadaDto rodadaDto = new RodadaDto(maiorRodadaDto.get().getId() + 1, "Rodada " + maiorRodadaDto.get().getId() + 1);
-			rodadaDto.adicionarJogadas(new JogadaDto(usuarioValidado, jogadaDto.getTipojogada()));
-			getRodadas().add(rodadaDto);
-		} else {
-			if (jogadaJaExiste(jogadaDto.getTipojogada())) {
-				throw new NegocioException("Jogada existente para esse usuário");
-			} else {
-				getRodadas().getLast().adicionarJogadas(new JogadaDto(usuarioValidado, jogadaDto.getTipojogada()));
+			for (TipoJogadaEnum jogadaDto : listaJogadasAgrupada.keySet()) {
+				switch (jogadaDto) {
+					case PEDRA:
+						boolean pedraVencedora = listaJogadasDto.stream()
+							.noneMatch(tipo -> (tipo.getTipojogada() == TipoJogadaEnum.PAPEL || tipo.getTipojogada() == TipoJogadaEnum.SPOOK));
+						
+						if (pedraVencedora) {
+							tipoJogadaVencedora = TipoJogadaEnum.PEDRA;
+						}
+					break;
+					case PAPEL:
+						boolean papelVencedora = listaJogadasDto.stream()
+							.noneMatch(tipo -> (tipo.getTipojogada() == TipoJogadaEnum.TESOURA || tipo.getTipojogada() == TipoJogadaEnum.LAGARTO));
+					
+						if (papelVencedora) {
+							tipoJogadaVencedora = TipoJogadaEnum.PAPEL;
+						}
+					break;
+					case TESOURA:
+						boolean tesouraVencedora = listaJogadasDto.stream()
+							.noneMatch(tipo -> (tipo.getTipojogada() == TipoJogadaEnum.SPOOK || tipo.getTipojogada() == TipoJogadaEnum.PEDRA));
+					
+						if (tesouraVencedora) {
+							tipoJogadaVencedora = TipoJogadaEnum.TESOURA;
+						}
+					break;
+					case SPOOK:
+						boolean spookVencedor = listaJogadasDto.stream()
+							.noneMatch(tipo -> (tipo.getTipojogada() == TipoJogadaEnum.LAGARTO || tipo.getTipojogada() == TipoJogadaEnum.PAPEL));
+					
+						if (spookVencedor) {
+							tipoJogadaVencedora = TipoJogadaEnum.SPOOK;
+						}
+					break;
+					case LAGARTO:
+						boolean lagartoVencedor = listaJogadasDto.stream()
+							.noneMatch(tipo -> (tipo.getTipojogada() == TipoJogadaEnum.PEDRA || tipo.getTipojogada() == TipoJogadaEnum.TESOURA));
+					
+						if (lagartoVencedor) {
+							tipoJogadaVencedora = TipoJogadaEnum.LAGARTO;
+						}
+					break;
+					
+					default:
+					break;
+				}
 			}
+			
+			return gravarRodada(listaJogadasAgrupada.get(tipoJogadaVencedora));
 		}
+	}
 	
-		return getRodadas().getLast();
-	}
-	
-	private boolean jogadaJaExiste(TipoJogadaEnum tipojogada) {
-		boolean jogadaNaoExiste = true;
-		
-		jogadaNaoExiste = getRodadas().getLast().getJogadas().stream().anyMatch(jog -> jog.getTipojogada() == tipojogada);
-		
-		return jogadaNaoExiste;
-	}
-
-	private UsuarioDto obterUsuario(UsuarioDto usuarioDto) throws NegocioException {		
-		List<UsuarioDto> listaUsuarios = usuarioService.listar(usuarioDto);
-		
-		if (listaUsuarios.isEmpty()) {
-			throw new NegocioException("Usuário não existe");
-		} else if (listaUsuarios.size() > 1) {
-			throw new NegocioException("Multiplos usuários para esse id");
-		} else {
-			return listaUsuarios.get(0);
-		}
-	}
-
-	@Override
-	public List<JogadaDto> finalizar() throws NegocioException {
-		if(existeRodadaAberta()) {
-			List<JogadaDto> jogadasCampeas = getRodadas().getLast().definirCampeao();
-			return jogadasCampeas;
-		} else {
-			throw new NegocioException("Usuário não existe");
-		}		
-	}
-
-	private boolean existeRodadaAberta() {
-		boolean existeRodada = false;
-		
-		if (!getRodadas().isEmpty() && getRodadas().getLast().getAtiva()) {
-			existeRodada = true;
-		}
-		
-		return existeRodada;
-	}
-
-	private boolean existeRodada(RodadaDto rodadaDto) {
-		boolean existeRodada = false;
-		
-		existeRodada = getRodadas().stream()
-				.anyMatch(rod -> rod.getId() == rodadaDto.getId());
-		
-		return existeRodada;
-	}
-
-//	private boolean existeRodadaAberta() {
-//		boolean existeRodadaAberta = false;
-//		return existeRodadaAberta;
-//	}
-
 	@Override
 	public void excluir(RodadaDto rodadaDto) throws NegocioException {
 		if (existeRodada(rodadaDto)) {
@@ -136,6 +122,54 @@ public class JogoServiceImpl implements IJogoService {
 		}
 	}
 	
+	private void validarJogadas(List<JogadaDto> jogadasDto) throws NegocioException {
+		Map<UsuarioDto, List<JogadaDto>> listaJogadasAgrupadaUsuario = jogadasDto.stream()
+				 .collect(Collectors.groupingBy(JogadaDto::getUsuario));
+		
+		for (UsuarioDto usuarioDto : listaJogadasAgrupadaUsuario.keySet()) {
+			List<JogadaDto> listaJogadasUsuario = listaJogadasAgrupadaUsuario.get(usuarioDto);
+			
+			if (listaJogadasUsuario.size() > 1) {
+				throw new NegocioException("Jogada existente para esse usuário");
+			}
+		}
+
+		for (JogadaDto jogadaDto : jogadasDto) {
+			List<UsuarioDto> listaUsuarios = usuarioService.listar(jogadaDto.getUsuario());
+			
+			if (listaUsuarios.isEmpty()) {
+				throw new NegocioException("Usuário não existe");
+			} else if (listaUsuarios.size() > 1) {
+				throw new NegocioException("Multiplos usuários para esse id");
+			}
+		}
+	}
+
+	private RodadaDto gravarRodada(List<JogadaDto> jogadasVencedoras) {
+		RodadaDto rodadaDto = null;
+		
+		if (getRodadas().isEmpty()) {
+			rodadaDto = new RodadaDto(1, "Rodada 1", jogadasVencedoras);
+		} else {
+			Optional<RodadaDto> maiorRodadaDto = getRodadas().stream()
+					.max(Comparator.comparing(RodadaDto::getId));
+			
+			rodadaDto = new RodadaDto(maiorRodadaDto.get().getId() + 1, "Rodada " + maiorRodadaDto.get().getId() + 1, jogadasVencedoras);
+			
+		}
+		getRodadas().add(rodadaDto);
+		return rodadaDto;
+	}
+
+	private boolean existeRodada(RodadaDto rodadaDto) {
+		boolean existeRodada = false;
+		
+		existeRodada = getRodadas().stream()
+				.anyMatch(rod -> rod.getId() == rodadaDto.getId());
+		
+		return existeRodada;
+	}
+
 	private LinkedList<RodadaDto> getRodadas() {
 		if (rodadas == null) {
 			rodadas = new LinkedList<RodadaDto>();

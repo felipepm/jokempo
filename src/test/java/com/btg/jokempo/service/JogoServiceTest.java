@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,27 +30,14 @@ public class JogoServiceTest {
 		usuarioService = mock(UsuarioServiceImpl.class);
 		jogoService = new JogoServiceImpl(usuarioService);
 	}
-
-	@Test
-	public void deveIncluirUmaJogada() throws NegocioException {
-		UsuarioDto usuarioDto = new UsuarioDto(1, "Felipe");
-
-		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
-		
-		jogoService.jogar(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
-		
-		List<RodadaDto> listaRodadas = jogoService.listar(new RodadaDto(1, ""));
-		
-		Assertions.assertEquals(1, listaRodadas.size());
-		Assertions.assertEquals(TipoJogadaEnum.PAPEL, listaRodadas.get(0).getJogadas().get(0).getTipojogada());
-		Assertions.assertEquals(1, listaRodadas.get(0).getJogadas().get(0).getUsuario().getId());
-		Assertions.assertEquals("Felipe", listaRodadas.get(0).getJogadas().get(0).getUsuario().getNome());
-	}
 	
 	@Test
 	public void naoPermiteJogadaDeJogadorNaoCadastrado() {
 		Assertions.assertThrows(NegocioException.class, () -> {
-			jogoService.jogar(new JogadaDto(new UsuarioDto(1, "Felipe"), TipoJogadaEnum.PAPEL));
+			List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
+			listaJogadasDto.add(new JogadaDto(new UsuarioDto(1, "Felipe"), TipoJogadaEnum.PAPEL));
+			
+			jogoService.jogar(listaJogadasDto);
 		});
 	}
 	
@@ -60,47 +48,45 @@ public class JogoServiceTest {
 		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
 		
 		Assertions.assertThrows(NegocioException.class, () -> {
-			jogoService.jogar(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
-			jogoService.jogar(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
+			List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
+			listaJogadasDto.add(new JogadaDto(new UsuarioDto(1, "Felipe"), TipoJogadaEnum.PAPEL));
+			listaJogadasDto.add(new JogadaDto(new UsuarioDto(1, "Felipe"), TipoJogadaEnum.PAPEL));
+			
+			jogoService.jogar(listaJogadasDto);
 		});
 	}
 	
 	@Test
-	public void deveFinalizarUmJogo() throws NegocioException {
+	public void naoPermiteUsuarioJogueMaisDeUmaVez() throws NegocioException {
 		UsuarioDto usuarioDto = new UsuarioDto(1, "Felipe");
 
 		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
 		
-		jogoService.jogar(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
-		
-		List<JogadaDto> jogadasVencedoras = jogoService.finalizar();
-
-		Assertions.assertEquals(1, jogadasVencedoras.size());
-		Assertions.assertEquals(TipoJogadaEnum.PAPEL, jogadasVencedoras.get(0).getTipojogada());
-		Assertions.assertEquals(1, jogadasVencedoras.get(0).getUsuario().getId());
-		Assertions.assertEquals("Felipe", jogadasVencedoras.get(0).getUsuario().getNome());
-	}
-	
-	@Test
-	public void naoPermiteFinalizarJogoInexistente() {
 		Assertions.assertThrows(NegocioException.class, () -> {
-			jogoService.finalizar();
+			List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
+			listaJogadasDto.add(new JogadaDto(new UsuarioDto(1, "Felipe"), TipoJogadaEnum.PAPEL));
+			listaJogadasDto.add(new JogadaDto(new UsuarioDto(1, "Felipe"), TipoJogadaEnum.TESOURA));
+			
+			jogoService.jogar(listaJogadasDto);
 		});
 	}
-	
+
 	@Test
 	public void deveExcluirUmJogo() throws NegocioException {
 		UsuarioDto usuarioDto = new UsuarioDto(1, "Felipe");
 		
 		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
 		
-		jogoService.jogar(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
+		List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
+		listaJogadasDto.add(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
 		
-		RodadaDto rodadaDto = new RodadaDto(1, "");
+		jogoService.jogar(listaJogadasDto);
+		
+		RodadaDto rodadaDto = new RodadaDto(1, "", null);
 
 		jogoService.excluir(rodadaDto);
 		
-		List<RodadaDto> listaRodadas = jogoService.listar(new RodadaDto(1, ""));
+		List<RodadaDto> listaRodadas = jogoService.listar(new RodadaDto(1, "", null));
 		
 		Assertions.assertEquals(0, listaRodadas.size());
 	}
@@ -108,7 +94,7 @@ public class JogoServiceTest {
 	@Test
 	public void naoPermiteExcluirJogoInexistente() {
 		Assertions.assertThrows(NegocioException.class, () -> {
-			jogoService.excluir(new RodadaDto(1, ""));
+			jogoService.excluir(new RodadaDto(1, "", null));
 		});
 	}
 	
@@ -118,7 +104,10 @@ public class JogoServiceTest {
 		
 		when(usuarioService.listar(eq(usuarioDto))).thenReturn(Arrays.asList(usuarioDto));
 		
-		jogoService.jogar(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
+		List<JogadaDto> listaJogadasDto = new ArrayList<JogadaDto>();
+		listaJogadasDto.add(new JogadaDto(usuarioDto, TipoJogadaEnum.PAPEL));
+		
+		jogoService.jogar(listaJogadasDto);
 		
 		List<RodadaDto> listaRodadas = jogoService.listar(null);
 		

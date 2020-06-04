@@ -1,50 +1,21 @@
 package com.btg.jokempo.dto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RodadaDto {
 
 	private long id;
 	private String nome;
-	private boolean ativa = true;
-	private List<JogadaDto> jogadas;
+	private List<JogadaDto> jogadasVencedoras;
 	
 	
-	public RodadaDto(long id, String nome) {
+	public RodadaDto(long id, String nome, List<JogadaDto> jogadasVencedoras) {
 		super();
 		this.id = id;
 		this.nome = nome;
+		this.jogadasVencedoras = jogadasVencedoras;
 	}
 
-	public void adicionarJogadas(JogadaDto jogadorDto) {
-		getJogadas().add(jogadorDto);
-	}
-	
-	public void finalizar() {
-		ativa = false;
-	}
-	
-	public List<JogadaDto> definirCampeao() {
-		List<JogadaDto> jogadasCampeas = null;
-//		JogadaDto jogadaCampea = null;
-//		
-//		getJogadas().forEach(jog->{
-//			if (jogadaCampea == null) {
-//				jogadaCampea = jog;
-//			}
-//		});
-		
-		for (JogadaDto jogadaDto : getJogadas()) {
-			if (jogadasCampeas == null) {
-				jogadasCampeas = new ArrayList<JogadaDto>();
-				jogadasCampeas.add(jogadaDto);
-			}
-		}
-
-		return jogadasCampeas;
-	}
-	
 	
 	@Override
 	public int hashCode() {
@@ -85,15 +56,8 @@ public class RodadaDto {
 		return nome;
 	}
 	
-	public boolean getAtiva() {
-		return ativa;
-	}
-	
-	public List<JogadaDto> getJogadas() {
-		if (jogadas == null) {
-			jogadas = new ArrayList<JogadaDto>();
-		}
-		return jogadas;
+	public List<JogadaDto> getJogadasVencedoras() {
+		return jogadasVencedoras;
 	}
 
 }

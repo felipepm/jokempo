@@ -1,6 +1,5 @@
 package com.btg.jokempo.controller;
 
-import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.btg.jokempo.dto.JogadaDto;
 import com.btg.jokempo.dto.RodadaDto;
@@ -31,17 +29,11 @@ public class JogoController {
 	}
 	
 	@PostMapping(name="/", consumes="application/json", produces="application/json")
-	public ResponseEntity<Object> jogar(@RequestBody JogadaDto jogadaDto) {
+	public ResponseEntity<Object> jogar(@RequestBody List<JogadaDto> listaJogadasDto) {
 		try {
-			RodadaDto rodadaDto = jogoService.jogar(jogadaDto);
+			RodadaDto rodadaDto = jogoService.jogar(listaJogadasDto);
 			
-			//Create resource location
-	        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-	                                    .path("/{id}")
-	                                    .buildAndExpand(rodadaDto.getId())
-	                                    .toUri();
-	        
-	        return ResponseEntity.created(location).build();
+			return ResponseEntity.ok(rodadaDto);
 		} catch (NegocioException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		} catch (Exception e) {
@@ -52,7 +44,7 @@ public class JogoController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> excluir(long id) {
 		try {
-			RodadaDto rodadaDto = new RodadaDto(id, "");
+			RodadaDto rodadaDto = new RodadaDto(id, "", null);
 		
 			jogoService.excluir(rodadaDto);
 			
@@ -70,23 +62,7 @@ public class JogoController {
 		if (id == 0 && (nome == null || nome.trim().isEmpty())) {
 			return jogoService.listar(null);
 		} else {
-			return jogoService.listar(new RodadaDto(id, nome));
+			return jogoService.listar(new RodadaDto(id, nome, null));
 		}
 	}
-	
-	@GetMapping(name="/finalizar/", produces="application/json")
-	public ResponseEntity<Object> finalizar() {
-		try {
-			ResponseEntity.ok();
-			
-			List<JogadaDto> jogadasVencedoras = jogoService.finalizar();
-			
-			return ResponseEntity.ok(jogadasVencedoras);
-		} catch (NegocioException e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-		}
-	}
-
 }

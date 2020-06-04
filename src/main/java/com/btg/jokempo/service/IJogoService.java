@@ -8,10 +8,8 @@ import com.btg.jokempo.exception.NegocioException;
 
 public interface IJogoService {
 
-	RodadaDto jogar(JogadaDto jogadaDto) throws NegocioException;
-	
-	List<JogadaDto> finalizar() throws NegocioException;
-	
+	RodadaDto jogar(List<JogadaDto> listaJogadasDto) throws NegocioException;
+
 	void excluir(RodadaDto rodadaDto) throws NegocioException;
 	
 	List<RodadaDto> listar(RodadaDto rodadaDto);
