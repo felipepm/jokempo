@@ -25,6 +25,26 @@ public class RodadaDto {
 		ativa = false;
 	}
 	
+	public List<JogadaDto> definirCampeao() {
+		List<JogadaDto> jogadasCampeas = null;
+//		JogadaDto jogadaCampea = null;
+//		
+//		getJogadas().forEach(jog->{
+//			if (jogadaCampea == null) {
+//				jogadaCampea = jog;
+//			}
+//		});
+		
+		for (JogadaDto jogadaDto : getJogadas()) {
+			if (jogadasCampeas == null) {
+				jogadasCampeas = new ArrayList<JogadaDto>();
+				jogadasCampeas.add(jogadaDto);
+			}
+		}
+
+		return jogadasCampeas;
+	}
+	
 	
 	@Override
 	public int hashCode() {
@@ -75,4 +95,5 @@ public class RodadaDto {
 		}
 		return jogadas;
 	}
+
 }

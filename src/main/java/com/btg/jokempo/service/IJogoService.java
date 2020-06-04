@@ -10,7 +10,7 @@ public interface IJogoService {
 
 	RodadaDto jogar(JogadaDto jogadaDto) throws NegocioException;
 	
-	void finalizar() throws NegocioException;
+	List<JogadaDto> finalizar() throws NegocioException;
 	
 	void excluir(RodadaDto rodadaDto) throws NegocioException;
 	

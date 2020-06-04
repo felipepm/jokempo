@@ -1,22 +1,32 @@
 package com.btg.jokempo.controller;
 
+import static org.mockito.Mockito.mock;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.btg.jokempo.service.IUsuarioService;
+import com.btg.jokempo.service.impl.UsuarioServiceImpl;
 
-@ExtendWith(MockitoExtension.class)
+//@ExtendWith(MockitoExtension.class)
 //@RunWith(JUnitPlatform.class)
 public class UsuarioControllerTest {
+//
+//	@InjectMocks
+//	UsuarioController usuarioController;
+//
+//	@Mock
+//	IUsuarioService usuarioService;
+//	
+	private UsuarioController usuarioController;
+	private IUsuarioService usuarioService;
+	
+	@BeforeEach
+	private void iniciar() {
+		usuarioService = mock(UsuarioServiceImpl.class);
+		usuarioController = new UsuarioController(usuarioService);
+	}
 
-	@InjectMocks
-	UsuarioController usuarioController;
-
-	@Mock
-	IUsuarioService usuarioService;
 
 	@Test
 	public void testAddEmployee() {

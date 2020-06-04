@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.btg.jokempo.dto.JogadaDto;
@@ -22,8 +21,12 @@ public class JogoServiceImpl implements IJogoService {
 	
 	private LinkedList<RodadaDto> rodadas = null;
 	
-	@Autowired
 	private IUsuarioService usuarioService;
+
+	public JogoServiceImpl(IUsuarioService usuarioService) {
+		super();
+		this.usuarioService = usuarioService;
+	}
 
 	@Override
 	public RodadaDto jogar(JogadaDto jogadaDto) throws NegocioException {
@@ -65,19 +68,30 @@ public class JogoServiceImpl implements IJogoService {
 		if (listaUsuarios.isEmpty()) {
 			throw new NegocioException("Usuário não existe");
 		} else if (listaUsuarios.size() > 1) {
-			throw new NegocioException("Usuário não existe");
+			throw new NegocioException("Multiplos usuários para esse id");
 		} else {
 			return listaUsuarios.get(0);
 		}
 	}
 
 	@Override
-	public void finalizar() throws NegocioException {
-//		if(existeRodada() && existeRodadaAberta()) {
-//			getUsuarios().removeIf(e -> e.getId() == usuarioDto.getId());
-//		} else {
-//			throw new NegocioException("Usuário não existe");
-//		}		
+	public List<JogadaDto> finalizar() throws NegocioException {
+		if(existeRodadaAberta()) {
+			List<JogadaDto> jogadasCampeas = getRodadas().getLast().definirCampeao();
+			return jogadasCampeas;
+		} else {
+			throw new NegocioException("Usuário não existe");
+		}		
+	}
+
+	private boolean existeRodadaAberta() {
+		boolean existeRodada = false;
+		
+		if (!getRodadas().isEmpty() && getRodadas().getLast().getAtiva()) {
+			existeRodada = true;
+		}
+		
+		return existeRodada;
 	}
 
 	private boolean existeRodada(RodadaDto rodadaDto) {

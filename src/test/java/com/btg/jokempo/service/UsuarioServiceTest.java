@@ -16,12 +16,8 @@ public class UsuarioServiceTest {
 	private UsuarioServiceImpl usuarioService = null;
 
 	@BeforeEach
-	private void criarUsuario() {
+	private void iniciar() {
 		usuarioDto  = new UsuarioDto(1, "Felipe");
-	}
-	
-	@BeforeEach
-	private void criarServico() {
 		usuarioService = new UsuarioServiceImpl();
 	}
 	

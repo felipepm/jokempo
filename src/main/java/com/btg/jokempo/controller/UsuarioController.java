@@ -3,7 +3,6 @@ package com.btg.jokempo.controller;
 import java.net.URI;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,8 +22,12 @@ import com.btg.jokempo.service.IUsuarioService;
 @RequestMapping(path = "/usuario")
 public class UsuarioController {
 	
-	@Autowired
 	private IUsuarioService usuarioService;
+	
+	public UsuarioController(IUsuarioService usuarioService) {
+		super();
+		this.usuarioService = usuarioService;
+	}
 
 	@GetMapping(name="/", produces="application/json")
 	public List<UsuarioDto> listar(@RequestParam(value="id",   required=false) long id,
